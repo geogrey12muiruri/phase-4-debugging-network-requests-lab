@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 function ToyForm({ onAddToy }) {
+ 
   const [formData, setFormData] = useState({
     name: "",
     image: "",
@@ -13,30 +14,25 @@ function ToyForm({ onAddToy }) {
     });
   }
 
-  function handleSubmit(event) {
-    event.preventDefault();
-
-    const newToy = {
-      ...formData,
-      likes: 0,
-    };
-
-    fetch("/toys", {
+  async function handleSubmit(e) {
+    e.preventDefault();
+    // fetch returns a Promise, we must await it
+    const response = await fetch("/toys", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newToy),
-    })
-      .then((r) => r.json())
-      .then((newToy) => {
-        setFormData({
-          name: "",
-          image: "",
-        });
-        onAddToy(newToy);
-      });
+      body: JSON.stringify(formData),
+    });
+    // response.json() returns a Promise, we must await it
+    const data = await response.json();
+    if (response.ok) {
+      console.log("Toy created:", data);
+    } else {
+      setFormData(data.errors);
+    }
   }
+
 
   return (
     <div className="container">
@@ -60,12 +56,14 @@ function ToyForm({ onAddToy }) {
           className="input-text"
         />
         <br />
+       
         <input
           type="submit"
           name="submit"
           value="Create New Toy"
           className="submit"
         />
+        
       </form>
     </div>
   );
